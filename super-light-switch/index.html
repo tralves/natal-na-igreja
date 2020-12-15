@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css" />
+    <style>
+      .textarea-container {
+        width: 300px;
+      }
+      .textarea.animation-code {
+        width: 300px;
+        min-height: 500px;
+        font-family: monospace;
+        font-size: 35px;
+        padding: 1rem;
+        line-height: 1em;
+        background-attachment: local;
+        background-image: linear-gradient(
+          90deg,
+          rgba(186, 211, 255, 1) 0%,
+          rgba(243, 231, 251, 1) 100%
+        );
+        background-repeat: no-repeat;
+        background-size: 100% 1em;
+      }
+      .church {
+        width: 100%;
+        height: 100%;
+      }
+      .strip {
+        position: absolute;
+        box-shadow: 0 0 3px rgb(31, 31, 27), inset 0 0 3px rgb(31, 31, 27);
+        border: 2px solid rgb(31, 31, 27);
+      }
+      .strip.on {
+        box-shadow: 0 0 3px lightyellow, inset 0 0 3px lightyellow;
+        border: 2px solid lightyellow;
+      }
+    </style>
+  </head>
+
+  <body>
+    <section class="section">
+      <div class="container">
+        <h1 class="title">Super Light Switch!</h1>
+        <div id="app">
+          <div class="columns is-mobile">
+            <div class="column is-one-third">
+              <div class="textarea-container is-pulled-right">
+                <textarea
+                  width="100px"
+                  ref="animationCode"
+                  class="textarea is-primary animation-code"
+                  v-bind:style="{ backgroundPositionY: `calc(1rem + ${currentLine}em)` }"
+                  @keyup="cursorUpdated"
+                  @mouseup="cursorUpdated"
+                  @paste="cursorUpdated"
+                ></textarea>
+              </div>
+            </div>
+            <div class="column">
+              <div
+                class="church is-relative has-background-grey-darker"
+                height="100%"
+                width="100%"
+              >
+                <div
+                  v-for="(strip, index) in strips"
+                  :key="index"
+                  :class="[
+                    'strip',
+                    {
+                      on: strip.on,
+                    }
+                  ]"
+                  :style="strip"
+                ></div>
+              </div>
+            </div>
+          </div>
+          <div class="columns is-mobile">
+            <div class="column is-half is-offset-one-quarter">
+              <b-field label="Host:" horizontal>
+                <b-input v-model="host" maxlength="50"></b-input>
+              </b-field>
+              <b-field label="Delay (ms):" horizontal>
+                <b-input v-model="delay" maxlength="4"></b-input>
+              </b-field>
+              <b-field horizontal
+                ><!-- Label left empty for spacing -->
+                <p class="control">
+                  <button @click="send" class="button is-primary">Send</button>
+                </p>
+              </b-field>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="content has-text-centered">
+        <p>
+          <strong>Super Light Switch!</strong>
+        </p>
+      </div>
+    </footer>
+
+    <script src="https://unpkg.com/vue"></script>
+    <!-- Full bundle -->
+    <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
+
+    <!-- Individual components -->
+    <!-- <script src="https://unpkg.com/buefy/dist/components/table"></script>
+    <script src="https://unpkg.com/buefy/dist/components/input"></script> -->
+
+    <script>
+      const numberOfLeds = 10;
+      new Vue({
+        el: "#app",
+        data() {
+          return {
+            host: "http://192.168.1.105",
+            delay: 300,
+            currentLine: 0,
+            strips: [
+              {
+                stripId: 1, // col 1
+                top: "280px",
+                left: "85px",
+                width: "20px",
+                height: "140px",
+              },
+              {
+                stripId: 2, // col 2
+                top: "280px",
+                left: "225px",
+                width: "20px",
+                height: "140px",
+              },
+              {
+                stripId: 3, // col 3
+                top: "280px",
+                left: "365px",
+                width: "20px",
+                height: "140px",
+              },
+              {
+                stripId: 4, // col 4
+                top: "280px",
+                left: "505px",
+                width: "20px",
+                height: "140px",
+              },
+              {
+                stripId: 5, // above cols left
+                top: "260px",
+                left: "60px",
+                width: "249px",
+                height: "1px",
+              },
+              {
+                stripId: 6, // above cols right
+                top: "260px",
+                left: "311px",
+                width: "239px",
+                height: "1px",
+              },
+              {
+                stripId: 7, // telheiro left
+                top: "246px",
+                left: "60px",
+                width: "201px",
+                height: "1px",
+                transformOrigin: "left",
+                transform: "rotate(-15deg)",
+              },
+              {
+                stripId: 7, // telheiro left
+                top: "194px",
+                left: "255px",
+                width: "54px",
+                height: "1px",
+              },
+              {
+                stripId: 8, // telheiro right
+                top: "246px",
+                left: "350px",
+                width: "201px",
+                height: "1px",
+                transformOrigin: "right",
+                transform: "rotate(15deg)",
+              },
+              {
+                stripId: 8, // telheiro right
+                top: "194px",
+                left: "311px",
+                width: "46px",
+                height: "1px",
+              },
+              {
+                stripId: 9, // telhado left
+                top: "146px",
+                left: "60px",
+                width: "265px",
+                height: "1px",
+                transformOrigin: "left center",
+                transform: "rotate(-20deg)",
+              },
+              {
+                stripId: 10, // telhado left
+                top: "56px",
+                left: "311px",
+                width: "265px",
+                height: "1px",
+                transformOrigin: "left center",
+                transform: "rotate(20deg)",
+              },
+            ],
+          };
+        },
+        computed: {
+          backgroundPositionY() {
+            return;
+          },
+        },
+        mounted() {
+          console.log("mounted!");
+          this.$refs.animationCode.value = `0000000000
+1000000000
+1100000000
+1110000000
+1111000000
+1111100000
+1111110000
+1111111000
+1111111100
+1111111110
+1111111111
+1111111111
+1111111110
+1111111100
+1111111000
+1111110000
+1111100000
+1111000000
+1110000000
+1100000000
+1000000000
+0000000000
+1111000000
+1111110000
+1111111100
+0000111111
+0000001111
+0000000011
+0000000000
+0000000000
+1111000000
+1111110000
+1111111100
+0000111111
+0000001111
+0000000011
+0000000000
+0000000000
+1111000000
+1111110000
+1111111100
+0000111111
+0000001111
+0000000011
+0000000000
+0000000000
+1000000000
+1100000000
+0110000000
+0011000000
+0001000000
+0000010000
+0000100000
+0000001000
+0000000100
+0000000001
+0000000010
+1000000000
+1100000000
+0110000000
+0011000000
+0001000000
+0000010000
+0000100000
+0000001000
+0000000100
+0000000001
+0000000010
+1000000000
+1100000000
+0110000000
+0011000000
+0001000000
+0000010000
+0000100000
+0000001000
+0000000100
+0000000001
+0000000010
+0000000000
+0000000011
+
+`;
+        },
+        methods: {
+          cursorUpdated(e) {
+            const textarea = e.target;
+            const text = textarea.value;
+            const charPos = textarea.selectionStart;
+            this.currentLine = 0;
+            for (let i = 0; i < text.length && i < charPos; i++) {
+              const char = text[i];
+              if (char === "\n") {
+                this.currentLine++;
+              }
+            }
+            console.log("currentLine: " + this.currentLine);
+            this.lineText = text.substring(
+              text.lastIndexOf("\n", charPos - 1) + 1,
+              text.indexOf("\n", charPos)
+            );
+            console.log("lineText: " + this.lineText);
+            this.updateLights();
+            this.sendCurrentLights();
+          },
+          updateLights() {
+            this.strips.forEach((strip) => {
+              strip.on = this.lineText[strip.stripId - 1] !== "0";
+            });
+            console.log(this.strips);
+          },
+          sendCurrentLights() {
+            fetch(this.host, {
+              method: "POST",
+              cache: "no-cache",
+              mode: "no-cors",
+              headers: {
+                // "Content-Type": "text/plain",
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Access-Control-Allow-Origin": "*",
+              },
+              body: "lights=" + this.lineText,
+            })
+              .then((response) => response.text())
+              .then((data) => console.log(data))
+              .catch((error) => {
+                console.error("Error:", error);
+                alert(error);
+              });
+          },
+          send() {
+            const animationText = this.$refs.animationCode.value;
+            // const animation = animationText
+            //   .split("\n")
+            //   .map((l) => parseInt(l, 2))
+            //   .filter((l) => !isNaN(l));
+            fetch(this.host + "/animation/", {
+              method: "POST",
+              cache: "no-cache",
+              mode: "no-cors",
+              headers: {
+                // "Content-Type": "text/plain",
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Access-Control-Allow-Origin": "*",
+              },
+              body: `animation=${animationText}&delay=${this.delay}`,
+            })
+              .then((response) => response.text())
+              .then((data) => console.log(data))
+              .catch((error) => {
+                console.error("Error:", error);
+                alert(error);
+              });
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
