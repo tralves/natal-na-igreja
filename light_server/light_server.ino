@@ -7,8 +7,6 @@
 #include <WiFiUdp.h>
 
 #ifndef STASSID
-// #define STASSID "Maridao&Maridona"
-// #define STAPSK "deusebom"
 #define STASSID "I.E Pampilhosa"
 #define STAPSK "QF84QesVrw"
 #endif
